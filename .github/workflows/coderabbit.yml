@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CodeRabbit Review
-        uses: coderabbitai/ai-pr-reviewer@main
+        uses: coderabbitai/openai-pr-reviewer@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
