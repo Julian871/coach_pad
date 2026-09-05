@@ -21,8 +21,8 @@ public class RefreshTokenEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "token", unique = true, nullable = false)
-    private String token;
+    @Column(name = "token_hash", unique = true, nullable = false)
+    private String tokenHash;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;

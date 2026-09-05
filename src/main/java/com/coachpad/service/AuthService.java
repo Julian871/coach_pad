@@ -6,7 +6,6 @@ import com.coachpad.dto.auth.request.RegistrationRequest;
 import com.coachpad.dto.auth.response.AccessTokenResponse;
 import com.coachpad.exception.auth.UserNotFoundException;
 import com.coachpad.model.entity.RefreshTokenEntity;
-import com.coachpad.repository.RefreshTokenRepository;
 import com.coachpad.security.custom.CustomUserDetails;
 import com.coachpad.security.jwt.JwtUtils;
 import com.coachpad.service.handler.auth.RegistrationHandler;
@@ -40,7 +39,6 @@ public class AuthService {
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final CookieService cookieService;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     public void register(RegistrationRequest request) {
         registrationHandler.register(request);
@@ -50,6 +48,8 @@ public class AuthService {
     public void confirmEmail(ConfirmEmailRequest request) {
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(UserNotFoundException::new);
+        if(user.isConfirmed())
+            throw new ApiException("Email is confirmed", HttpStatus.BAD_REQUEST);
 
         if(!user.getConfirmationToken().toString().equals(request.getToken()))
             throw new ApiException("Incorrect token", HttpStatus.UNAUTHORIZED);
@@ -103,8 +103,7 @@ public class AuthService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ApiException("User not found", HttpStatus.UNAUTHORIZED));
 
-        RefreshTokenEntity oldTokenEntity = refreshTokenRepository.findByToken(oldRefreshToken)
-                .orElseThrow(() -> new ApiException("Refresh token not found", HttpStatus.UNAUTHORIZED));
+        RefreshTokenEntity oldTokenEntity = refreshTokenService.findByToken(oldRefreshToken);
 
         if (oldTokenEntity.isRevoked() || oldTokenEntity.getExpiryDate().isBefore(LocalDateTime.now())) {
             throw new ApiException("Refresh token expired or revoked", HttpStatus.UNAUTHORIZED);
