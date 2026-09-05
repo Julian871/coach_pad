@@ -49,7 +49,7 @@ public class AuthService {
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(UserNotFoundException::new);
         if(user.isConfirmed())
-            throw new ApiException("Email is confirmed", HttpStatus.BAD_REQUEST);
+            throw new ApiException("Incorrect token", HttpStatus.UNAUTHORIZED);
 
         if(!user.getConfirmationToken().toString().equals(request.getToken()))
             throw new ApiException("Incorrect token", HttpStatus.UNAUTHORIZED);
