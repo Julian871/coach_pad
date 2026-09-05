@@ -5,6 +5,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
+  language: "ru-RU"
   review:
     runs-on: ubuntu-latest
     permissions:
