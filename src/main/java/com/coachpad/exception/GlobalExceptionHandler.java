@@ -25,7 +25,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorMessageResponse> handleApiException(ApiException e) {
-        log.error("Api error: {}", e.getStatus().getReasonPhrase());
+        log.error("Api error: {}", e.getMessage());
 
         ErrorMessageResponse errorResponse = new ErrorMessageResponse(
                 e.getStatus().getReasonPhrase(),
@@ -47,6 +47,8 @@ public class GlobalExceptionHandler {
         } else if (e.getMessage() != null && e.getMessage().contains("JSON parse error")) {
             message = "Invalid JSON format";
         }
+
+        log.error(message);
 
         ErrorMessageResponse errorResponse = new ErrorMessageResponse(
                 "JSON body error",
@@ -140,6 +142,26 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorMessageResponse> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.error("Illegal argument: {}", e.getMessage());
+
+        String message = "Invalid request parameter";
+        if (e.getMessage() != null && e.getMessage().contains("Invalid UUID")) {
+            message = "Invalid UUID format. Please provide a valid UUID.";
+        }
+
+        ErrorMessageResponse errorResponse = new ErrorMessageResponse(
+                "Bad Request",
+                message,
+                LocalDateTime.now()
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(errorResponse);
     }
 
     @ExceptionHandler(Exception.class)
