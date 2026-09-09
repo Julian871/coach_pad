@@ -60,4 +60,12 @@ public class UserEntity {
             orphanRemoval = true
     )
     private List<RefreshTokenEntity> refreshTokens = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<ClientEntity> clients = new ArrayList<>();
 }
