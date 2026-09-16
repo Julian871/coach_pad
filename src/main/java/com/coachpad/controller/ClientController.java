@@ -31,7 +31,7 @@ public class ClientController {
 
     @GetMapping("/{clientId}")
     @PreAuthorize("hasAuthority('TRAINER')")
-    public ResponseEntity<ClientResponse> getClientById(@PathVariable String clientId) {
+    public ResponseEntity<ClientResponse> getClientById(@PathVariable Long clientId) {
         return ResponseEntity.ok(clientService.getClientById(clientId));
     }
 
@@ -44,7 +44,7 @@ public class ClientController {
     @PutMapping("/{clientId}")
     @PreAuthorize("hasAuthority('TRAINER')")
     public ResponseEntity<ClientResponse> updateClientById(
-            @PathVariable String clientId,
+            @PathVariable Long clientId,
             @Valid @RequestBody UpdateClientRequest request
     ) {
         return ResponseEntity.ok(clientService.updateClient(clientId, request));
@@ -53,7 +53,7 @@ public class ClientController {
     @DeleteMapping("/{clientId}")
     @PreAuthorize("hasAuthority('TRAINER')")
     public ResponseEntity<Void> deleteClientById(
-            @PathVariable String clientId
+            @PathVariable Long clientId
     ) {
         clientService.deleteClientById(clientId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
