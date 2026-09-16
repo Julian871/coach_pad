@@ -1,10 +1,9 @@
 package com.coachpad.dto.client.response;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record ClientResponse(
-        UUID id,
+        Long id,
         String name,
         String instagram,
         String telegram,

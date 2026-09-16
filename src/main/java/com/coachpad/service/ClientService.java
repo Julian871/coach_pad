@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -41,8 +40,8 @@ public class ClientService {
         clientRepository.save(client);
     }
 
-    public ClientResponse getClientById(String clientId) {
-        ClientEntity client = clientRepository.findClientWithUserById(UUID.fromString(clientId))
+    public ClientResponse getClientById(Long clientId) {
+        ClientEntity client = clientRepository.findClientWithUserById(clientId)
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
         String currentUserEmail = securityUtil.getCurrentUserEmail();
@@ -62,8 +61,8 @@ public class ClientService {
         return clientMapper.toDtoList(clients);
     }
 
-    public ClientResponse updateClient(String clientId, UpdateClientRequest request) {
-        ClientEntity client = clientRepository.findClientWithUserById(UUID.fromString(clientId))
+    public ClientResponse updateClient(Long clientId, UpdateClientRequest request) {
+        ClientEntity client = clientRepository.findClientWithUserById(clientId)
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
         String currentUserEmail = securityUtil.getCurrentUserEmail();
@@ -76,8 +75,8 @@ public class ClientService {
         return clientMapper.toDto(client);
     }
 
-    public void deleteClientById(String clientId) {
-        ClientEntity client = clientRepository.findClientWithUserById(UUID.fromString(clientId))
+    public void deleteClientById(Long clientId) {
+        ClientEntity client = clientRepository.findClientWithUserById(clientId)
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
         String currentUserEmail = securityUtil.getCurrentUserEmail();

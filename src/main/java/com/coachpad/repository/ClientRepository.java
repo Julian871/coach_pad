@@ -7,15 +7,14 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface ClientRepository extends JpaRepository<ClientEntity, UUID> {
+public interface ClientRepository extends JpaRepository<ClientEntity, Long> {
 
-    boolean existsByNameAndUserId(String name, UUID userId);
+    boolean existsByNameAndUserId(String name, Long userId);
 
     @EntityGraph(attributePaths = {"user"})
-    Optional<ClientEntity> findClientWithUserById(UUID id);
+    Optional<ClientEntity> findClientWithUserById(Long id);
 
     List<ClientEntity> findByUserEmail(String email);
 }

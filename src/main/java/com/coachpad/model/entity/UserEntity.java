@@ -23,8 +23,8 @@ import java.util.UUID;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "email", unique = true, nullable = false)
     private String email;
@@ -68,4 +68,12 @@ public class UserEntity {
             orphanRemoval = true
     )
     private List<ClientEntity> clients = new ArrayList<>();
+
+    @Builder.Default
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<AppointmentEntity> appointments  = new ArrayList<>();
 }
