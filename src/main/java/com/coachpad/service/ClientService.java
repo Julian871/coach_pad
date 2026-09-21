@@ -11,8 +11,12 @@ import com.coachpad.model.enums.Gender;
 import com.coachpad.repository.ClientRepository;
 import com.coachpad.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,13 +25,20 @@ import java.util.List;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final UserService userService;
     private final SecurityUtil securityUtil;
     private final ClientMapper clientMapper;
 
-    public void createClient(CreateClientRequest request) {
-        UserEntity user = securityUtil.getCurrentUser();
+    private static final String CACHE_KEY =
+            "T(org.springframework.security.core.context.SecurityContextHolder)" +
+                    ".getContext().getAuthentication().getPrincipal().id()";
 
-        if(clientRepository.existsByNameAndUserId(request.getName().trim(), user.getId()))
+    @CacheEvict(cacheNames = "clients", key = CACHE_KEY, cacheManager = "clientListCacheManager")
+    public void createClient(CreateClientRequest request) {
+        Long userId = securityUtil.getCurrentUserId();
+        UserEntity user = userService.getUserById(userId);
+
+        if(clientRepository.existsByNameAndUserIdAndDeletedFalse(request.getName().trim(), userId))
             throw new ApiException("This name exists", HttpStatus.CONFLICT);
 
 
@@ -41,33 +52,44 @@ public class ClientService {
     }
 
     public ClientResponse getClientById(Long clientId) {
-        ClientEntity client = clientRepository.findClientWithUserById(clientId)
+        ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
-        String currentUserEmail = securityUtil.getCurrentUserEmail();
+        Long userId = securityUtil.getCurrentUserId();
 
-        if(!client.getUser().getEmail().equals(currentUserEmail))
+        if(!client.getUser().getId().equals(userId))
             throw new ApiException("Incorrect client", HttpStatus.FORBIDDEN);
 
         return clientMapper.toDto(client);
     }
 
+    @Cacheable(
+            value = "clients",
+            key = CACHE_KEY,
+            cacheManager = "clientListCacheManager"
+    )
     public List<ClientResponse> getMyClients() {
 
-        String currentUserEmail = securityUtil.getCurrentUserEmail();
+        Long userId = securityUtil.getCurrentUserId();
 
-        List<ClientEntity> clients = clientRepository.findByUserEmail(currentUserEmail);
+        List<ClientEntity> clients = clientRepository.findByUserIdAndDeletedFalse(userId, Sort.by(Sort.Direction.ASC, "name"));
 
         return clientMapper.toDtoList(clients);
     }
 
+    @CacheEvict(
+            cacheNames = "clients",
+            key = CACHE_KEY,
+            cacheManager = "clientListCacheManager"
+    )
+    @Transactional
     public ClientResponse updateClient(Long clientId, UpdateClientRequest request) {
-        ClientEntity client = clientRepository.findClientWithUserById(clientId)
+        ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
-        String currentUserEmail = securityUtil.getCurrentUserEmail();
+        Long userId = securityUtil.getCurrentUserId();
 
-        if(!client.getUser().getEmail().equals(currentUserEmail))
+        if(!client.getUser().getId().equals(userId))
             throw new ApiException("Incorrect client", HttpStatus.FORBIDDEN);
 
         clientMapper.updateEntity(client, request);
@@ -75,15 +97,22 @@ public class ClientService {
         return clientMapper.toDto(client);
     }
 
+    @CacheEvict(
+            cacheNames = "clients",
+            key = CACHE_KEY,
+            cacheManager = "clientListCacheManager"
+    )
+    @Transactional
     public void deleteClientById(Long clientId) {
-        ClientEntity client = clientRepository.findClientWithUserById(clientId)
+        ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
-        String currentUserEmail = securityUtil.getCurrentUserEmail();
+        Long userId = securityUtil.getCurrentUserId();
 
-        if(!client.getUser().getEmail().equals(currentUserEmail))
+        if(!client.getUser().getId().equals(userId))
             throw new ApiException("Incorrect client", HttpStatus.FORBIDDEN);
 
-        clientRepository.delete(client);
+        client.setDeleted(true);
+        clientRepository.save(client);
     }
 }

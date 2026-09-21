@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changesets/001_create_users.sql
+  - include:
+      file: db/changelog/changesets/002_create_clients.sql
+  - include:
+      file: db/changelog/changesets/003_create_appointments.sql
+  - include:
+      file: db/changelog/changesets/004_create_refresh_tokens.sql

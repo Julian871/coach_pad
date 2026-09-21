@@ -1,17 +1,20 @@
+server:
+  port: ${PORT:8080}
+
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/${DB_NAME}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
     username: ${DB_USER}
     password: ${DB_PASSWORD}
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
-    show-sql: true
+    show-sql: false
 
   liquibase:
-    enabled: false
+    enabled: true
     change-log: classpath:db/changelog/changelog-master.yaml
 
   mvc:
@@ -23,22 +26,28 @@ spring:
 
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
 
   cache:
     type: redis
+
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
 jwt:
   secret: ${JWT_SECRET}
   access-expiration: 900000   # 15 minutes
   refresh-expiration: 604800000 # 7 days
 
+telegram:
+  bot:
+    token: ${TELEGRAM_BOT_TOKEN}
+
 logging:
   level:
     root: INFO
-    org.springframework.web: INFO
-    org.springframework.security: INFO
     com.coachpad: INFO
 
 springdoc:

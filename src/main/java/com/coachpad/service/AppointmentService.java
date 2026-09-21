@@ -24,18 +24,19 @@ import java.util.List;
 public class AppointmentService {
 
     private final SecurityUtil securityUtil;
+    private final UserService userService;
     private final ClientRepository clientRepository;
     private final AppointmentRepository appointmentRepository;
     private final AppointmentMapper appointmentMapper;
 
 
     public void createAppointmentTraining(CreateAppointmentTrainingRequest request) {
-        ClientEntity client = clientRepository.findClientWithUserById(request.getClientId())
+        ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(request.getClientId())
                 .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
 
-        UserEntity currentUser = securityUtil.getCurrentUser();
+        UserEntity currentUser = userService.getUserById(securityUtil.getCurrentUserId());
 
-        if(!client.getUser().getEmail().equals(currentUser.getEmail()))
+        if(!client.getUser().getId().equals(currentUser.getId()))
             throw new ApiException("Incorrect client", HttpStatus.FORBIDDEN);
 
         if(appointmentRepository.existsByClientIdAndDateTime(client.getId(), request.getDateTime()))
@@ -54,7 +55,7 @@ public class AppointmentService {
     }
 
     public void createAppointmentPlan(CreateAppointmentPlanRequest request) {
-        UserEntity currentUser = securityUtil.getCurrentUser();
+        UserEntity currentUser = userService.getUserById(securityUtil.getCurrentUserId());
 
         if(appointmentRepository.existsByUserIdAndDateTime(currentUser.getId(), request.getDateTime()))
             throw new ApiException("Current time exists", HttpStatus.CONFLICT);
@@ -72,7 +73,7 @@ public class AppointmentService {
     }
 
     public List<AppointmentResponse> getAppointments(LocalDateTime startTime, LocalDateTime endTime) {
-        UserEntity user = securityUtil.getCurrentUser();
+        UserEntity user = userService.getUserById(securityUtil.getCurrentUserId());
 
         List<AppointmentEntity> appointments = appointmentRepository.findByUserIdAndDateTimeBetween(
                 user.getId(),
@@ -84,7 +85,7 @@ public class AppointmentService {
     }
 
     public void deleteAppointment(Long appointmentId) {
-        UserEntity user = securityUtil.getCurrentUser();
+        UserEntity user = userService.getUserById(securityUtil.getCurrentUserId());
 
         AppointmentEntity appointment = appointmentRepository.findByIdAndUserId(appointmentId, user.getId())
                 .orElseThrow(() -> new ApiException("Appointment not found", HttpStatus.BAD_REQUEST));

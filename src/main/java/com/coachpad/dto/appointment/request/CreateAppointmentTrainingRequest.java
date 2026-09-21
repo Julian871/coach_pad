@@ -17,6 +17,6 @@ public class CreateAppointmentTrainingRequest {
     @Positive(message = "Incorrect client id")
     Long clientId;
 
-    @Size(max = 300, message = "Max = 300")
+    @Size(max = 300, message = "Max = 25")
     String comment;
 }

@@ -2,6 +2,8 @@ package com.coachpad.repository;
 
 import com.coachpad.model.entity.AppointmentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -22,4 +24,14 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
     );
 
     Optional<AppointmentEntity> findByIdAndUserId(Long id, Long userId);
+
+    @Query("SELECT COUNT(a) FROM AppointmentEntity a " +
+            "WHERE a.user.id = :userId " +
+            "AND a.type = com.coachpad.model.enums.AppointmentType.TRAINING " +
+            "AND a.dateTime >= :from AND a.dateTime < :to")
+    long countTrainingsInRange(
+            @Param("userId") Long userId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
 }
