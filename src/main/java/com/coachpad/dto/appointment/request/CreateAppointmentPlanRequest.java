@@ -17,6 +17,6 @@ public class CreateAppointmentPlanRequest {
     @Size(max = 20, message = "Max = 20")
     String plan;
 
-    @Size(max = 300, message = "Max = 300")
+    @Size(max = 300, message = "Max = 25")
     String comment;
 }

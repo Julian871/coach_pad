@@ -12,7 +12,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Entity
 @Data
@@ -26,24 +25,15 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
-
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
-
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "telegram_id", nullable = false, unique = true)
+    private Long telegramId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private UserRole role;
-
-    @Column(name = "confirmed", nullable = false)
-    private boolean confirmed;
-
-    @Column(name = "confirmation_token", unique = true)
-    private UUID confirmationToken;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -63,9 +53,7 @@ public class UserEntity {
 
     @Builder.Default
     @OneToMany(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            mappedBy = "user"
     )
     private List<ClientEntity> clients = new ArrayList<>();
 

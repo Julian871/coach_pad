@@ -1,18 +1,16 @@
 package com.coachpad.security.jwt;
 
+import com.coachpad.model.entity.UserEntity;
+import com.coachpad.model.enums.UserRole;
+import com.coachpad.security.custom.UserPrincipal;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class JwtUtils {
@@ -31,49 +29,50 @@ public class JwtUtils {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateAccessToken(Authentication authentication) {
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        return Jwts
-                .builder()
-                .subject(userDetails.getUsername())
-                .claim("roles", roles)
+    public String generateAccessToken(UserEntity user) {
+        return Jwts.builder()
+                .subject(user.getTelegramId().toString())
+                .claim("id", user.getId())
+                .claim("name", user.getName())
+                .claim("role", user.getRole().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + accessExpiration))
                 .signWith(getSignedKey())
                 .compact();
     }
 
-    public String generateRefreshToken(String email) {
+    public String generateRefreshToken(Long telegramId) {
         return Jwts.builder()
-                .subject(email)
+                .subject(telegramId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshExpiration))
                 .signWith(getSignedKey())
                 .compact();
     }
 
-    public List<String> getRolesFromToken(String token) {
+    public UserPrincipal getUserPrincipalFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSignedKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return claims.get("roles", List.class);
+        Long telegramId = Long.parseLong(claims.getSubject());
+        Long id = claims.get("id", Long.class);
+        String name = claims.get("name", String.class);
+        UserRole role = UserRole.valueOf(claims.get("role", String.class));
+
+        return new UserPrincipal(id, name, telegramId, role);
     }
 
-    public String getEmailFromToken(String token) {
+    public Long getTelegramIdFromRefreshToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(getSignedKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
 
-        return claims.getSubject();
+        return Long.parseLong(claims.getSubject());
     }
 
     public boolean validateToken(String token) {

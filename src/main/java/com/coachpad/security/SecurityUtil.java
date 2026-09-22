@@ -1,9 +1,7 @@
 package com.coachpad.security;
 
 import com.coachpad.exception.ApiException;
-import com.coachpad.model.entity.UserEntity;
-import com.coachpad.service.UserService;
-import lombok.RequiredArgsConstructor;
+import com.coachpad.security.custom.UserPrincipal;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,24 +9,19 @@ import org.springframework.stereotype.Component;
 
 
 @Component
-@RequiredArgsConstructor
 public class SecurityUtil {
 
-    private final UserService userService;
-
-    public Authentication getAuthentication() {
-        return SecurityContextHolder.getContext().getAuthentication();
-    }
-
-    public String getCurrentUserEmail() {
-        Authentication authentication = getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+    public UserPrincipal getCurrentUserPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof UserPrincipal principal)) {
             throw new ApiException("User not authenticated", HttpStatus.UNAUTHORIZED);
         }
-        return authentication.getName();
+        return principal;
     }
 
-    public UserEntity getCurrentUser() {
-        return userService.getUserByEmail(getCurrentUserEmail());
+    public Long getCurrentUserId() {
+        return getCurrentUserPrincipal().id();
     }
 }

@@ -1,5 +1,6 @@
 package com.coachpad.security.jwt;
 
+import com.coachpad.security.custom.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,7 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -35,15 +35,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
 
             if (jwtUtils.validateToken(token)) {
-                String email = jwtUtils.getEmailFromToken(token);
-                List<String> roles = jwtUtils.getRolesFromToken(token);
+                UserPrincipal userPrincipal = jwtUtils.getUserPrincipalFromToken(token);
 
-                List<GrantedAuthority> authorities = roles.stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                List<GrantedAuthority> authorities = List.of(
+                        new SimpleGrantedAuthority(userPrincipal.role().name())
+                );
 
                 UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(email, null, authorities);
+                        new UsernamePasswordAuthenticationToken(userPrincipal, null, authorities);
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
