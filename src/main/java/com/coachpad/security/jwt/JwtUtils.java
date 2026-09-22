@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtils {
@@ -31,6 +32,7 @@ public class JwtUtils {
 
     public String generateAccessToken(UserEntity user) {
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(user.getTelegramId().toString())
                 .claim("id", user.getId())
                 .claim("name", user.getName())
@@ -43,6 +45,7 @@ public class JwtUtils {
 
     public String generateRefreshToken(Long telegramId) {
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(telegramId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + refreshExpiration))

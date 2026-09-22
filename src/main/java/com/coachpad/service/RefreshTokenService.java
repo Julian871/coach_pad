@@ -7,6 +7,7 @@ import com.coachpad.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -42,6 +43,11 @@ public class RefreshTokenService {
             rt.setRevoked(true);
             refreshTokenRepository.save(rt);
         });
+    }
+
+    @Transactional
+    public void deleteExpiredAndRevoked() {
+        refreshTokenRepository.deleteExpiredAndRevoked(LocalDateTime.now());
     }
 
     public RefreshTokenEntity findByToken(String token) {

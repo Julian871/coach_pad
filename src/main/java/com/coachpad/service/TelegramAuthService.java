@@ -65,6 +65,7 @@ public class TelegramAuthService {
         String accessToken = jwtUtils.generateAccessToken(user);
         String refreshToken = jwtUtils.generateRefreshToken(user.getTelegramId());
 
+        refreshTokenService.deleteExpiredAndRevoked();
         refreshTokenService.saveRefreshToken(user, refreshToken, jwtUtils.getRefreshExpiration());
         cookieService.addRefreshTokenCookie(response, refreshToken);
 
@@ -84,7 +85,7 @@ public class TelegramAuthService {
 
         Long telegramId = jwtUtils.getTelegramIdFromRefreshToken(oldRefreshToken);
         UserEntity user = userRepository.findByTelegramId(telegramId)
-                .orElseThrow(() -> new ApiException("User not found", HttpStatus.UNAUTHORIZED));;
+                .orElseThrow(() -> new ApiException("User not found", HttpStatus.UNAUTHORIZED));
 
         RefreshTokenEntity oldTokenEntity = refreshTokenService.findByToken(oldRefreshToken);
 
