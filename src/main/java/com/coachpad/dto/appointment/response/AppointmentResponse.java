@@ -9,6 +9,8 @@ public record AppointmentResponse(
         LocalDateTime dateTime,
         String comment,
         AppointmentType type,
-        String plan
+        String plan,
+        Long clientId,
+        String clientAvatarUrl
 ) {
 }

@@ -1,6 +1,7 @@
 package com.coachpad.repository;
 
 import com.coachpad.model.entity.AppointmentEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,6 +18,7 @@ public interface AppointmentRepository extends JpaRepository<AppointmentEntity, 
 
     boolean existsByUserIdAndDateTime(Long userId, LocalDateTime dateTime);
 
+    @EntityGraph(attributePaths = {"client"})
     List<AppointmentEntity> findByUserIdAndDateTimeBetween(
             Long userId,
             LocalDateTime start,
