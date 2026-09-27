@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class ClientService {
     private final UserService userService;
     private final SecurityUtil securityUtil;
     private final ClientMapper clientMapper;
+    private final FileStorageService fileStorageService;
 
     private static final String CACHE_KEY =
             "T(org.springframework.security.core.context.SecurityContextHolder)" +
@@ -114,5 +116,53 @@ public class ClientService {
 
         client.setDeleted(true);
         clientRepository.save(client);
+    }
+
+    @CacheEvict(
+            cacheNames = "clients",
+            key = CACHE_KEY,
+            cacheManager = "clientListCacheManager"
+    )
+    @Transactional
+    public ClientResponse uploadAvatar(Long clientId, MultipartFile file) {
+        ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
+                .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
+
+        Long userId = securityUtil.getCurrentUserId();
+        if (!client.getUser().getId().equals(userId)) {
+            throw new ApiException("Incorrect client", HttpStatus.FORBIDDEN);
+        }
+
+        if (client.getAvatarUrl() != null && !client.getAvatarUrl().isBlank()) {
+            fileStorageService.deleteAvatar(client.getAvatarUrl());
+        }
+
+        String filename = fileStorageService.saveAvatar(file);
+        client.setAvatarUrl(filename);
+        clientRepository.save(client);
+
+        return clientMapper.toDto(client);
+    }
+
+    @CacheEvict(
+            cacheNames = "clients",
+            key = CACHE_KEY,
+            cacheManager = "clientListCacheManager"
+    )
+    @Transactional
+    public void deleteAvatar(Long clientId) {
+        ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
+                .orElseThrow(() -> new ApiException("Client not found", HttpStatus.BAD_REQUEST));
+
+        Long userId = securityUtil.getCurrentUserId();
+        if (!client.getUser().getId().equals(userId)) {
+            throw new ApiException("Incorrect client", HttpStatus.FORBIDDEN);
+        }
+
+        if (client.getAvatarUrl() != null && !client.getAvatarUrl().isBlank()) {
+            fileStorageService.deleteAvatar(client.getAvatarUrl());
+            client.setAvatarUrl(null);
+            clientRepository.save(client);
+        }
     }
 }

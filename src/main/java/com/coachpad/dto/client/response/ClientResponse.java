@@ -11,6 +11,7 @@ public record ClientResponse(
         String comment,
         LocalDateTime birthDate,
         String gender,
-        String createdAt
+        String createdAt,
+        String avatarUrl
 ) {
 }

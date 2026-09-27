@@ -54,6 +54,9 @@ public class ClientEntity {
     @Builder.Default
     private boolean deleted = false;
 
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;

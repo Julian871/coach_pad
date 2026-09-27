@@ -7,3 +7,5 @@ databaseChangeLog:
       file: db/changelog/changesets/003_create_appointments.sql
   - include:
       file: db/changelog/changesets/004_create_refresh_tokens.sql
+  - include:
+      file: db/changelog/changesets/005_add_avatar_to_clients.sql

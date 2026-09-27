@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -57,5 +58,21 @@ public class ClientController {
     ) {
         clientService.deleteClientById(clientId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PostMapping("/{clientId}/avatar")
+    @PreAuthorize("hasAuthority('TRAINER')")
+    public ResponseEntity<ClientResponse> uploadAvatar(
+            @PathVariable Long clientId,
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(clientService.uploadAvatar(clientId, file));
+    }
+
+    @DeleteMapping("/{clientId}/avatar")
+    @PreAuthorize("hasAuthority('TRAINER')")
+    public ResponseEntity<Void> deleteAvatar(@PathVariable Long clientId) {
+        clientService.deleteAvatar(clientId);
+        return ResponseEntity.noContent().build();
     }
 }
