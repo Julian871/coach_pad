@@ -21,7 +21,7 @@ import java.time.Duration;
 import java.util.List;
 
 @Configuration
-@EnableCaching
+//@EnableCaching
 @Slf4j
 public class RedisConfig implements CachingConfigurer {
     @Bean("clientListCacheManager")
