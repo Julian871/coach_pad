@@ -11,8 +11,6 @@ import com.coachpad.model.enums.Gender;
 import com.coachpad.repository.ClientRepository;
 import com.coachpad.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,7 +33,6 @@ public class ClientService {
             "T(org.springframework.security.core.context.SecurityContextHolder)" +
                     ".getContext().getAuthentication().getPrincipal().id()";
 
-    @CacheEvict(cacheNames = "clients", key = CACHE_KEY, cacheManager = "clientListCacheManager")
     public void createClient(CreateClientRequest request) {
         Long userId = securityUtil.getCurrentUserId();
         UserEntity user = userService.getUserById(userId);
@@ -65,11 +62,6 @@ public class ClientService {
         return clientMapper.toDto(client);
     }
 
-    @Cacheable(
-            value = "clients",
-            key = CACHE_KEY,
-            cacheManager = "clientListCacheManager"
-    )
     public List<ClientResponse> getMyClients() {
 
         Long userId = securityUtil.getCurrentUserId();
@@ -79,11 +71,6 @@ public class ClientService {
         return clientMapper.toDtoList(clients);
     }
 
-    @CacheEvict(
-            cacheNames = "clients",
-            key = CACHE_KEY,
-            cacheManager = "clientListCacheManager"
-    )
     @Transactional
     public ClientResponse updateClient(Long clientId, UpdateClientRequest request) {
         ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
@@ -99,11 +86,6 @@ public class ClientService {
         return clientMapper.toDto(client);
     }
 
-    @CacheEvict(
-            cacheNames = "clients",
-            key = CACHE_KEY,
-            cacheManager = "clientListCacheManager"
-    )
     @Transactional
     public void deleteClientById(Long clientId) {
         ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
@@ -118,11 +100,6 @@ public class ClientService {
         clientRepository.save(client);
     }
 
-    @CacheEvict(
-            cacheNames = "clients",
-            key = CACHE_KEY,
-            cacheManager = "clientListCacheManager"
-    )
     @Transactional
     public ClientResponse uploadAvatar(Long clientId, MultipartFile file) {
         ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
@@ -144,11 +121,6 @@ public class ClientService {
         return clientMapper.toDto(client);
     }
 
-    @CacheEvict(
-            cacheNames = "clients",
-            key = CACHE_KEY,
-            cacheManager = "clientListCacheManager"
-    )
     @Transactional
     public void deleteAvatar(Long clientId) {
         ClientEntity client = clientRepository.findClientWithUserByIdAndDeletedFalse(clientId)
