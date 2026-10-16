@@ -35,13 +35,14 @@ public class UserService {
 
         LocalDate today = LocalDate.now();
         LocalDateTime thisMonthStart = today.withDayOfMonth(1).atStartOfDay();
-        LocalDateTime thisMonthEnd = thisMonthStart.plusMonths(1);
+        LocalDateTime thisMonthEnd = today.atTime(23, 59, 59);
         LocalDateTime prevMonthStart = thisMonthStart.minusMonths(1);
+        LocalDateTime prevMonthEnd = thisMonthStart;
 
         long totalClients = clientRepository.countByUserIdAndDeletedFalse(userId);
         long newClientsThisMonth = clientRepository.countCreatedSince(userId, thisMonthStart);
         long trainingsThisMonth = appointmentRepository.countTrainingsInRange(userId, thisMonthStart, thisMonthEnd);
-        long trainingsPrevMonth = appointmentRepository.countTrainingsInRange(userId, prevMonthStart, thisMonthStart);
+        long trainingsPrevMonth = appointmentRepository.countTrainingsInRange(userId, prevMonthStart, prevMonthEnd);
 
         return new UserStatisticResponse(
                 user.getTelegramId(),
